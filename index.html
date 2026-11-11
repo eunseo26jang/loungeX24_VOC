@@ -263,9 +263,13 @@
 
             grid.innerHTML = filtered.map(item => {
                 let statusBadge = '';
-                if(item.status === '미조치') statusBadge = 'bg-rose-50 text-rose-600 border-rose-200';
-                else if(item.status === '조치중') statusBadge = 'bg-amber-50 text-amber-600 border-amber-200';
-                else statusBadge = 'bg-emerald-50 text-emerald-600 border-emerald-200';
+                if(item.status === '미조치') {
+                    statusBadge = '<button onclick="cycleStatus(' + item.id + ')" class="px-3 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-bold rounded-xl flex items-center space-x-1.5 transition shadow-sm"><i class="fa-solid fa-circle-exclamation"></i><span>미조치</span></button>';
+                } else if(item.status === '조치중') {
+                    statusBadge = '<button onclick="cycleStatus(' + item.id + ')" class="px-3 py-1 bg-amber-50 hover:bg-amber-100 text-amber-600 border border-amber-200 text-xs font-bold rounded-xl flex items-center space-x-1.5 transition shadow-sm"><i class="fa-solid fa-spinner"></i><span>조치중</span></button>';
+                } else {
+                    statusBadge = '<button onclick="cycleStatus(' + item.id + ')" class="px-3 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border border-emerald-200 text-xs font-bold rounded-xl flex items-center space-x-1.5 transition shadow-sm"><i class="fa-solid fa-circle-check"></i><span>완료</span></button>';
+                }
 
                 let commentsHtml = item.comments.map(c => `
                     <div class="bg-slate-50 p-2.5 rounded-xl text-xs mb-2 border border-slate-100">
@@ -286,12 +290,8 @@
                                     <span class="text-xs text-slate-500 font-medium">${item.platform}</span>
                                 </div>
                                 <div class="flex items-center space-x-2">
-                                    <select onchange="updateStatus(${item.id}, this.value)" class="text-xs font-bold px-2 py-1 rounded-lg border ${statusBadge} outline-none cursor-pointer">
-                                        <option value="미조치" ${item.status==='미조치'?'selected':''}>미조치</option>
-                                        <option value="조치중" ${item.status==='조치중'?'selected':''}>조치중</option>
-                                        <option value="완료" ${item.status==='완료'?'selected':''}>완료</option>
-                                    </select>
-                                    <button onclick="deleteVoc(${item.id})" title="VOC 삭제" class="text-slate-400 hover:text-rose-600 p-1 transition"><i class="fa-solid fa-trash-can text-sm"></i></button>
+                                    ${statusBadge}
+                                    <button onclick="deleteVoc(${item.id})" title="VOC 삭제" class="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition"><i class="fa-solid fa-trash-can text-sm"></i></button>
                                 </div>
                             </div>
                             <div class="flex items-center justify-between mb-2">
@@ -338,10 +338,15 @@
             renderCards();
         }
 
-        function updateStatus(id, newStatus) {
+        // 상태 버튼 클릭 시 순환 변경 (미조치 -> 조치중 -> 완료 -> 미조치)
+        function cycleStatus(id) {
             let item = vocList.find(i => i.id === id);
-            if(item) item.status = newStatus;
-            renderCards();
+            if(item) {
+                if(item.status === '미조치') item.status = '조치중';
+                else if(item.status === '조치중') item.status = '완료';
+                else item.status = '미조치';
+                renderCards();
+            }
         }
 
         function deleteVoc(id) {
